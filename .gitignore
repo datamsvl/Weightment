@@ -1,9 +1,17 @@
 
-node_modules/
+# Dependencies
+**/node_modules/
+
+# Environment variables and secrets
 .env
 .env.*
 !.env.example
-dist/
-build/
-coverage/
-.DS_Store
+
+# Build outputs
+**/dist/
+**/build/
+**/coverage/
+
+# Logs
+*.log
+npm-debug.log*
