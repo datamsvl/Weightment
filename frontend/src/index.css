@@ -1,0 +1,30 @@
+.products {
+  max-width: 720px;
+  margin: 0 auto 80px;
+}
+
+.product {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin: 12px 0;
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: white;
+}
+
+.product h3 {
+  margin: 0 0 8px;
+}
+
+.product p {
+  margin: 0;
+  color: #64748b;
+}
+
+.product strong {
+  color: #4f46e5;
+  white-space: nowrap;
+}

@@ -1,0 +1,758 @@
+/* =====================================================
+   WEIGHMENT SEARCH  -  mobile-first responsive UI
+   (Class names unchanged. Used by WeighmentSearch.jsx)
+===================================================== */
+
+html,
+body {
+  margin: 0;
+  -webkit-text-size-adjust: 100%;
+}
+
+.weighment-page {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 24px;
+  color: #1e293b;
+  background: #eef2f8;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.4;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.weighment-page * {
+  box-sizing: border-box;
+}
+
+.ws-page-header {
+  max-width: 1280px;
+  margin: 0 auto 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.ws-page-header h1 {
+  margin: 0;
+  color: #0f2a5e;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.ws-page-header p {
+  margin: 6px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+/* ---------- create button ---------- */
+
+.ws-create-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 46px;
+  padding: 10px 20px;
+  border: 1px solid #2563eb;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #4f7bf0, #2563eb);
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+  touch-action: manipulation;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.ws-create-btn:hover {
+  background: #1d4ed8;
+}
+
+.ws-create-btn:active,
+.ws-search-btn:active,
+.ws-reset-btn:active,
+.ws-edit-btn:active {
+  transform: scale(0.97);
+}
+
+.ws-create-btn:focus-visible,
+.ws-search-btn:focus-visible,
+.ws-reset-btn:focus-visible,
+.ws-edit-btn:focus-visible,
+.ws-retry-btn:focus-visible {
+  outline: 3px solid rgba(59, 130, 246, 0.5);
+  outline-offset: 2px;
+}
+
+.ws-create-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+/* ---------- filter card ---------- */
+
+.ws-filter-card,
+.ws-results {
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.ws-filter-card {
+  padding: 22px;
+  margin-bottom: 20px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04),
+    0 4px 14px rgba(15, 23, 42, 0.04);
+}
+
+.ws-filter-heading {
+  margin-bottom: 18px;
+}
+
+.ws-filter-heading h2 {
+  margin: 0;
+  color: #1e293b;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.ws-filter-heading p {
+  margin: 5px 0 0;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.ws-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.ws-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.ws-field label {
+  color: #475569;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ws-field input,
+.ws-field select {
+  width: 100%;
+  height: 46px;
+  padding: 0 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  outline: none;
+  background: #fff;
+  color: #1e293b;
+  font-family: inherit;
+  font-size: 15px;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ws-field select {
+  padding-right: 34px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+.ws-field input::placeholder {
+  color: #94a3b8;
+}
+
+.ws-field input:focus,
+.ws-field select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+}
+
+.ws-filter-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid #edf2f7;
+}
+
+.ws-search-btn,
+.ws-reset-btn {
+  min-width: 100px;
+  min-height: 44px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: all 0.2s ease;
+}
+
+.ws-search-btn {
+  border: 1px solid #2563eb;
+  background: #2563eb;
+  color: #fff;
+}
+
+.ws-search-btn:hover {
+  background: #1d4ed8;
+}
+
+.ws-reset-btn {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #475569;
+}
+
+.ws-reset-btn:hover {
+  background: #f1f5f9;
+}
+
+/* ---------- results container ---------- */
+
+.ws-results {
+  width: 100%;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04),
+    0 4px 14px rgba(15, 23, 42, 0.04);
+}
+
+.ws-results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.ws-results-header h2 {
+  margin: 0;
+  color: #1e293b;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.ws-results-header p {
+  margin: 5px 0 0;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.ws-results-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 5px 12px;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ---------- results table (desktop) ---------- */
+
+.ws-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f8fafc;
+}
+
+.ws-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+}
+
+.ws-table thead th {
+  padding: 14px 18px;
+  background: #f8fafc;
+  color: #64748b;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.45px;
+  white-space: nowrap;
+}
+
+.ws-table tbody td {
+  padding: 15px 18px;
+  color: #475569;
+  border-bottom: 1px solid #edf2f7;
+  font-size: 13px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.ws-table tbody tr:nth-child(even) {
+  background: #fbfdff;
+}
+
+.ws-table tbody tr {
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.15s ease;
+}
+
+.ws-table tbody tr:hover {
+  background: #eff6ff;
+}
+
+.ws-table tbody tr:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: -2px;
+  background: #eff6ff;
+}
+
+.ws-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.ws-table tbody td:first-child {
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+}
+
+.ws-table tbody .ws-vehicle-cell {
+  color: #334155;
+  font-weight: 700;
+}
+
+.ws-table tbody .ws-party-cell {
+  color: #1e293b;
+  font-weight: 500;
+}
+
+.ws-table tbody .ws-number-cell {
+  color: #2563eb;
+  font-weight: 700;
+}
+
+/* ---------- status badges ---------- */
+
+.ws-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 78px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.ws-status-dot {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.status-draft {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.status-open {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.status-saved {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.status-convert {
+  background: #f5f3ff;
+  color: #6d28d9;
+}
+
+.status-default {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+/* ---------- edit button ---------- */
+
+.ws-action-heading,
+.ws-action-cell {
+  text-align: center !important;
+}
+
+.ws-edit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 7px 14px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: all 0.2s ease;
+}
+
+.ws-edit-btn:hover {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #fff;
+}
+
+.ws-edit-btn span {
+  font-size: 15px;
+  line-height: 10px;
+}
+
+/* ---------- loading / error / empty ---------- */
+
+.ws-loading,
+.ws-error,
+.ws-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 44px 20px;
+  text-align: center;
+}
+
+.ws-loading {
+  flex-direction: row;
+  gap: 11px;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.ws-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #dbeafe;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: ws-spin 0.7s linear infinite;
+}
+
+@keyframes ws-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ws-error p {
+  margin: 0 0 14px;
+  color: #dc2626;
+  font-size: 14px;
+}
+
+.ws-retry-btn {
+  min-height: 40px;
+  padding: 8px 16px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ws-retry-btn:hover {
+  background: #fee2e2;
+}
+
+.ws-empty-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 12px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 28px;
+}
+
+.ws-empty h3 {
+  margin: 0;
+  color: #334155;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.ws-empty p {
+  margin: 7px 0 0;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.ws-results-footer {
+  padding: 12px 18px;
+  border-top: 1px solid #edf2f7;
+  background: #fbfdff;
+  color: #64748b;
+  font-size: 12px;
+}
+
+/* =====================================================
+   TABLET
+===================================================== */
+
+@media (max-width: 1000px) {
+  .ws-filter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* =====================================================
+   PHONE  -  table rows become tap-friendly cards
+===================================================== */
+
+@media (max-width: 700px) {
+  .weighment-page {
+    padding: 12px;
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+
+  .ws-page-header {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .ws-page-header h1 {
+    font-size: 22px;
+  }
+
+  .ws-create-btn {
+    width: 100%;
+    min-height: 50px;
+    font-size: 15px;
+  }
+
+  .ws-filter-card {
+    padding: 14px;
+    margin-bottom: 14px;
+    border-radius: 12px;
+  }
+
+  .ws-filter-heading {
+    margin-bottom: 14px;
+  }
+
+  .ws-filter-heading h2 {
+    font-size: 15px;
+  }
+
+  .ws-filter-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  /* 16px prevents iOS zoom on focus */
+  .ws-field input,
+  .ws-field select {
+    font-size: 16px;
+  }
+
+  /* date + party take full row, vehicle + status share one */
+  .ws-filter-grid .ws-field:nth-child(1),
+  .ws-filter-grid .ws-field:nth-child(2) {
+    grid-column: 1 / -1;
+  }
+
+  .ws-filter-actions {
+    justify-content: stretch;
+    margin-top: 16px;
+    padding-top: 14px;
+  }
+
+  .ws-search-btn,
+  .ws-reset-btn {
+    flex: 1;
+    min-height: 48px;
+    font-size: 15px;
+  }
+
+  .ws-results {
+    border-radius: 12px;
+  }
+
+  .ws-results-header {
+    padding: 14px;
+  }
+
+  .ws-results-header h2 {
+    font-size: 15px;
+  }
+
+  .ws-results-header p {
+    display: none;
+  }
+
+  .ws-results-count {
+    font-size: 11px;
+  }
+
+  /* ---- cards ---- */
+
+  .ws-table-wrapper {
+    overflow: visible;
+    background: #f8fafc;
+    padding: 10px;
+  }
+
+  .ws-table {
+    min-width: 0;
+    display: block;
+  }
+
+  .ws-table thead {
+    display: none;
+  }
+
+  .ws-table tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .ws-table tbody tr,
+  .ws-table tbody tr:nth-child(even) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 12px;
+    padding: 14px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+  }
+
+  .ws-table tbody tr:active {
+    background: #eff6ff;
+  }
+
+  .ws-table tbody td {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 0;
+    border: none;
+    font-size: 14px;
+    white-space: normal;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .ws-table tbody td::before {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #94a3b8;
+  }
+
+  .ws-table tbody td:nth-child(1)::before { content: "Date"; }
+  .ws-table tbody td:nth-child(2)::before { content: "Vehicle No."; }
+  .ws-table tbody td:nth-child(3)::before { content: "Party Name"; }
+  .ws-table tbody td:nth-child(4)::before { content: "Weighment No."; }
+  .ws-table tbody td:nth-child(5)::before { content: "Status"; }
+  .ws-table tbody td:nth-child(6)::before { content: none; }
+
+  .ws-table tbody td:nth-child(3),
+  .ws-table tbody td:nth-child(4) {
+    grid-column: 1 / -1;
+  }
+
+  .ws-table tbody .ws-vehicle-cell {
+    font-size: 15px;
+  }
+
+  .ws-status-badge {
+    align-self: flex-start;
+  }
+
+  .ws-table tbody td.ws-action-cell {
+    grid-column: 1 / -1;
+    text-align: left !important;
+  }
+
+  .ws-edit-btn {
+    width: 100%;
+    min-height: 44px;
+    font-size: 14px;
+  }
+
+  .ws-results-footer {
+    padding: 12px 14px;
+  }
+}
+
+@media (max-width: 380px) {
+  .ws-filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ws-table tbody tr,
+  .ws-table tbody tr:nth-child(even) {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .weighment-page * {
+    transition: none !important;
+  }
+
+  .ws-spinner {
+    animation-duration: 1.6s;
+  }
+}
