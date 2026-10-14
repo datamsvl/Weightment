@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./WeighmentSearch.css";
 
-const API_URL = "http://localhost:5000/api/weighments";
+const API_URL = "https://weightment-backend.onrender.com";
 
 const initialFilters = {
   date: "",

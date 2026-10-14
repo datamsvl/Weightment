@@ -1,15 +1,16 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./WeighmentCreate.css";
+import ItemNameCombobox from "./ItemNameCombobox";
 
-const API_URL = "http://localhost:5000/api/weighments";
+const API_URL = "https://weightment-backend.onrender.com";
 
 const createRow = (id) => ({
   id,
   itemName: "",
   grossWeight: "",
   tareWeight: "",
+  netWeight: "",
   transferTareToNext: false,
 });
 
@@ -18,7 +19,12 @@ const isBlank = (value) =>
 
 const calculateNet = (gross, tare) => {
   if (isBlank(gross) || isBlank(tare)) return "";
-  return Number((Number(gross) - Number(tare)).toFixed(3));
+
+  const result = Number(gross) - Number(tare);
+
+  return Number.isFinite(result)
+    ? Number(result.toFixed(3))
+    : "";
 };
 
 function WeighmentCreate() {
@@ -49,7 +55,6 @@ function WeighmentCreate() {
     type: "success",
   });
 
-  // Automatically close popup after 3 seconds.
   useEffect(() => {
     if (!popup.message) return;
 
@@ -66,45 +71,152 @@ function WeighmentCreate() {
 
   const updateForm = (event) => {
     const { name, value } = event.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
+  // Update a row and calculate/transfer weights automatically.
   const updateRow = (rowId, field, value) => {
-    setRows((prev) =>
-      prev.map((row) =>
-        row.id === rowId ? { ...row, [field]: value } : row
-      )
-    );
+    setRows((previousRows) => {
+      const updatedRows = previousRows.map((row) => ({ ...row }));
+
+      const index = updatedRows.findIndex(
+        (row) => row.id === rowId
+      );
+
+      if (index === -1) return previousRows;
+
+      const row = updatedRows[index];
+
+      row[field] = value;
+
+      // When Net Weight is entered:
+      // Tare Weight = Gross Weight - Net Weight.
+      if (field === "netWeight") {
+        if (
+          isBlank(value) ||
+          isBlank(row.grossWeight) ||
+          !Number.isFinite(Number(value)) ||
+          !Number.isFinite(Number(row.grossWeight))
+        ) {
+          row.tareWeight = "";
+          return updatedRows;
+        }
+
+        const gross = Number(row.grossWeight);
+        const net = Number(value);
+        const tare = Number((gross - net).toFixed(3));
+
+        if (tare < 0) {
+          row.tareWeight = "";
+          return updatedRows;
+        }
+
+        row.tareWeight = tare;
+
+        // Automatically transfer the tare weight to the
+        // next row's gross weight, if the next row exists.
+        if (updatedRows[index + 1]) {
+          updatedRows[index + 1].grossWeight = tare;
+        }
+
+        return updatedRows;
+      }
+
+      // If Gross Weight changes, recalculate Net Weight.
+      if (field === "grossWeight") {
+        if (
+          !isBlank(value) &&
+          !isBlank(row.tareWeight) &&
+          Number.isFinite(Number(value)) &&
+          Number(value) >= Number(row.tareWeight)
+        ) {
+          row.netWeight = Number(
+            (Number(value) - Number(row.tareWeight)).toFixed(3)
+          );
+        } else {
+          row.netWeight = "";
+        }
+      }
+
+      // If Tare Weight changes, recalculate Net Weight
+      // and transfer the new tare to the next row.
+      if (field === "tareWeight") {
+        if (
+          !isBlank(value) &&
+          !isBlank(row.grossWeight) &&
+          Number.isFinite(Number(value)) &&
+          Number(value) >= 0 &&
+          Number(row.grossWeight) >= Number(value)
+        ) {
+          row.netWeight = Number(
+            (Number(row.grossWeight) - Number(value)).toFixed(3)
+          );
+        } else {
+          row.netWeight = "";
+        }
+
+        if (
+          updatedRows[index + 1] &&
+          !isBlank(value) &&
+          Number.isFinite(Number(value)) &&
+          Number(value) >= 0
+        ) {
+          updatedRows[index + 1].grossWeight = Number(value);
+        }
+      }
+
+      return updatedRows;
+    });
   };
 
-  // Transfer a row's tare weight into the next row's gross weight.
+  // Existing manual tare-to-next-row transfer option.
   const handleTransferTareToNext = (rowId, checked) => {
     const index = rows.findIndex((row) => row.id === rowId);
 
     if (index === -1) return;
 
     if (index === rows.length - 1) {
-      showPopup("Add a next row before selecting this checkbox.", "error");
+      showPopup(
+        "Add a next row before selecting this checkbox.",
+        "error"
+      );
       return;
     }
 
     const currentRow = rows[index];
 
     if (checked && isBlank(currentRow.tareWeight)) {
-      showPopup("Enter the current row's Tare Weight first.", "error");
+      showPopup(
+        "Enter the current row's Tare Weight first.",
+        "error"
+      );
       return;
     }
 
     const transferredWeight = Number(currentRow.tareWeight);
 
-    setRows((prev) =>
-      prev.map((row, rowIndex) => {
+    setRows((previousRows) =>
+      previousRows.map((row, rowIndex) => {
         if (rowIndex === index) {
-          return { ...row, transferTareToNext: checked };
+          return {
+            ...row,
+            transferTareToNext: checked,
+          };
         }
 
         if (rowIndex === index + 1 && checked) {
-          return { ...row, grossWeight: transferredWeight };
+          return {
+            ...row,
+            grossWeight: transferredWeight,
+            netWeight: calculateNet(
+              transferredWeight,
+              row.tareWeight
+            ),
+          };
         }
 
         return row;
@@ -115,8 +227,8 @@ function WeighmentCreate() {
       setFirstWeight(transferredWeight);
       setSecondWeight("");
 
-      setForm((prev) => ({
-        ...prev,
+      setForm((previous) => ({
+        ...previous,
         partyGrossWeight: transferredWeight,
         partyTareWeight: "",
       }));
@@ -126,38 +238,58 @@ function WeighmentCreate() {
   };
 
   const addRows = () => {
-    const count = Math.max(1, Math.min(50, Number(rowsToAdd) || 1));
+    const count = Math.max(
+      1,
+      Math.min(50, Number(rowsToAdd) || 1)
+    );
 
     const newRows = Array.from(
       { length: count },
       (_, index) => createRow(nextId + index)
     );
 
-    setRows((prev) => [...prev, ...newRows]);
-    setNextId((prev) => prev + count);
+    setRows((previousRows) => [
+      ...previousRows,
+      ...newRows,
+    ]);
+
+    setNextId((previous) => previous + count);
   };
 
   const deleteRow = (rowId) => {
     if (rows.length <= 1) {
-      showPopup("At least one item row is required.", "error");
+      showPopup(
+        "At least one item row is required.",
+        "error"
+      );
       return;
     }
 
-    setRows((prev) => prev.filter((row) => row.id !== rowId));
+    setRows((previousRows) =>
+      previousRows.filter((row) => row.id !== rowId)
+    );
   };
 
+  // Capture first and second weights using the existing
+  // manual weight-entry interface.
   const handleGetWeight = () => {
     if (
       weightInMT.trim() === "" ||
       !Number.isFinite(Number(weightInMT)) ||
       Number(weightInMT) < 0
     ) {
-      showPopup("Please enter a valid weight in MT.", "error");
+      showPopup(
+        "Please enter a valid weight in MT.",
+        "error"
+      );
       return;
     }
 
     if (!rows.length) {
-      showPopup("Please add at least one item row.", "error");
+      showPopup(
+        "Please add at least one item row.",
+        "error"
+      );
       return;
     }
 
@@ -168,16 +300,21 @@ function WeighmentCreate() {
       setFirstWeight(weight);
       setSecondWeight("");
 
-      setForm((prev) => ({
-        ...prev,
+      setForm((previous) => ({
+        ...previous,
         partyGrossWeight: weight,
         partyTareWeight: "",
       }));
 
-      setRows((prev) =>
-        prev.map((row) =>
+      setRows((previousRows) =>
+        previousRows.map((row) =>
           row.id === lastRow.id
-            ? { ...row, grossWeight: weight, tareWeight: "" }
+            ? {
+                ...row,
+                grossWeight: weight,
+                tareWeight: "",
+                netWeight: "",
+              }
             : row
         )
       );
@@ -186,15 +323,22 @@ function WeighmentCreate() {
     } else {
       setSecondWeight(weight);
 
-      setForm((prev) => ({
-        ...prev,
+      setForm((previous) => ({
+        ...previous,
         partyTareWeight: weight,
       }));
 
-      setRows((prev) =>
-        prev.map((row) =>
+      setRows((previousRows) =>
+        previousRows.map((row) =>
           row.id === lastRow.id
-            ? { ...row, tareWeight: weight }
+            ? {
+                ...row,
+                tareWeight: weight,
+                netWeight: calculateNet(
+                  row.grossWeight,
+                  weight
+                ),
+              }
             : row
         )
       );
@@ -220,10 +364,15 @@ function WeighmentCreate() {
     setSecondWeight("");
     setWeightInMT("");
     setCaptureStage(1);
+
     setRows([createRow(1)]);
     setNextId(2);
     setRowsToAdd(1);
-    setPopup({ message: "", type: "success" });
+
+    setPopup({
+      message: "",
+      type: "success",
+    });
   };
 
   const partyNetWeight = calculateNet(
@@ -231,13 +380,44 @@ function WeighmentCreate() {
     form.partyTareWeight
   );
 
-  const captureNetWeight = calculateNet(firstWeight, secondWeight);
+  const captureNetWeight = calculateNet(
+    firstWeight,
+    secondWeight
+  );
 
-  const handleSave = async (event, targetStatus = form.status) => {
+  // Total of every item row's net weight (shown under the table).
+  const totalItemNetWeight = Number(
+    rows
+      .reduce((sum, row) => {
+        const net =
+          row.netWeight !== ""
+            ? row.netWeight
+            : calculateNet(row.grossWeight, row.tareWeight);
+
+        const value = Number(net);
+
+        return isBlank(net) || !Number.isFinite(value)
+          ? sum
+          : sum + value;
+      }, 0)
+      .toFixed(3)
+  );
+
+  const handleSave = async (
+    event,
+    targetStatus = form.status
+  ) => {
     event.preventDefault();
 
-    if (!form.date || !form.partyName.trim() || !form.vehicleNo.trim()) {
-      showPopup("Date, Party Name, and Vehicle No are required.", "error");
+    if (
+      !form.date ||
+      !form.partyName.trim() ||
+      !form.vehicleNo.trim()
+    ) {
+      showPopup(
+        "Date, Party Name, and Vehicle No are required.",
+        "error"
+      );
       return;
     }
 
@@ -250,20 +430,37 @@ function WeighmentCreate() {
       : Number(form.partyTareWeight);
 
     if (
-      (gross !== null && (!Number.isFinite(gross) || gross < 0)) ||
-      (tare !== null && (!Number.isFinite(tare) || tare < 0))
+      (gross !== null &&
+        (!Number.isFinite(gross) || gross < 0)) ||
+      (tare !== null &&
+        (!Number.isFinite(tare) || tare < 0))
     ) {
-      showPopup("Gross and tare weights must be valid non-negative numbers.", "error");
+      showPopup(
+        "Gross and tare weights must be valid non-negative numbers.",
+        "error"
+      );
       return;
     }
 
-    if (gross !== null && tare !== null && gross > 0 && tare > gross) {
-      showPopup("Party Tare Weight cannot exceed Party Gross Weight.", "error");
+    if (
+      gross !== null &&
+      tare !== null &&
+      tare > gross
+    ) {
+      showPopup(
+        "Party Tare Weight cannot exceed Party Gross Weight.",
+        "error"
+      );
       return;
     }
 
-    const first = isBlank(firstWeight) ? null : Number(firstWeight);
-    const second = isBlank(secondWeight) ? null : Number(secondWeight);
+    const first = isBlank(firstWeight)
+      ? null
+      : Number(firstWeight);
+
+    const second = isBlank(secondWeight)
+      ? null
+      : Number(secondWeight);
 
     const payload = {
       ...form,
@@ -283,18 +480,28 @@ function WeighmentCreate() {
       items: rows.map((row) => {
         const grossBlank = isBlank(row.grossWeight);
         const tareBlank = isBlank(row.tareWeight);
-        const itemGross = grossBlank ? null : Number(row.grossWeight);
-        const itemTare = tareBlank ? null : Number(row.tareWeight);
+
+        const itemGross = grossBlank
+          ? null
+          : Number(row.grossWeight);
+
+        const itemTare = tareBlank
+          ? null
+          : Number(row.tareWeight);
+
+        const itemNet =
+          !grossBlank && !tareBlank
+            ? Number((itemGross - itemTare).toFixed(3))
+            : null;
 
         return {
           itemName: row.itemName.trim(),
           grossWeight: itemGross,
           tareWeight: itemTare,
-          netWeight:
-            grossBlank || tareBlank
-              ? null
-              : Number((itemGross - itemTare).toFixed(3)),
-          transferTareToNext: Boolean(row.transferTareToNext),
+          netWeight: itemNet,
+          transferTareToNext: Boolean(
+            row.transferTareToNext
+          ),
         };
       }),
     };
@@ -304,14 +511,18 @@ function WeighmentCreate() {
     try {
       const response = await fetch(API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(payload),
       });
 
       const result = await response.json();
 
       if (!response.ok || !result.success) {
-        throw new Error(result.message || "Failed to save weighment.");
+        throw new Error(
+          result.message || "Failed to save weighment."
+        );
       }
 
       showPopup(
@@ -321,7 +532,10 @@ function WeighmentCreate() {
 
       setTimeout(() => navigate("/weighment"), 1600);
     } catch (error) {
-      showPopup(error.message || "Failed to save weighment.", "error");
+      showPopup(
+        error.message || "Failed to save weighment.",
+        "error"
+      );
     } finally {
       setSaving(false);
     }
@@ -338,20 +552,38 @@ function WeighmentCreate() {
         <div
           style={{
             ...popupStyles.icon,
-            color: popup.type === "success" ? "#15803d" : "#dc2626",
-            background: popup.type === "success" ? "#dcfce7" : "#fee2e2",
+            color:
+              popup.type === "success"
+                ? "#15803d"
+                : "#dc2626",
+            background:
+              popup.type === "success"
+                ? "#dcfce7"
+                : "#fee2e2",
           }}
         >
           {popup.type === "success" ? "✓" : "✕"}
         </div>
+
         <h3 style={popupStyles.title}>
-          {popup.type === "success" ? "Success!" : "Failed!"}
+          {popup.type === "success"
+            ? "Success!"
+            : "Failed!"}
         </h3>
-        <p style={popupStyles.message}>{popup.message}</p>
+
+        <p style={popupStyles.message}>
+          {popup.message}
+        </p>
+
         <button
           type="button"
           style={popupStyles.button}
-          onClick={() => setPopup({ message: "", type: "success" })}
+          onClick={() =>
+            setPopup({
+              message: "",
+              type: "success",
+            })
+          }
         >
           OK
         </button>
@@ -372,6 +604,7 @@ function WeighmentCreate() {
           >
             ← Back
           </button>
+
           <h2>Create Weighment</h2>
         </div>
       </header>
@@ -379,11 +612,15 @@ function WeighmentCreate() {
       <form onSubmit={(event) => handleSave(event, "Saved")}>
         <main className="cw-content">
           <section className="cw-card">
-            <h3 className="cw-section-title">▤ WEIGHMENT DETAILS</h3>
+            <h3 className="cw-section-title">
+              ▤ WEIGHMENT DETAILS
+            </h3>
 
             <div className="cw-details-grid">
               <div className="cw-field">
-                <label htmlFor="partyName">PARTY NAME *</label>
+                <label htmlFor="partyName">
+                  PARTY NAME *
+                </label>
                 <input
                   id="partyName"
                   name="partyName"
@@ -395,7 +632,9 @@ function WeighmentCreate() {
               </div>
 
               <div className="cw-field">
-                <label htmlFor="partyGrossWeight">PARTY GROSS WEIGHT</label>
+                <label htmlFor="partyGrossWeight">
+                  PARTY GROSS WEIGHT
+                </label>
                 <input
                   id="partyGrossWeight"
                   type="number"
@@ -408,7 +647,9 @@ function WeighmentCreate() {
               </div>
 
               <div className="cw-field">
-                <label htmlFor="partyTareWeight">PARTY TARE WEIGHT</label>
+                <label htmlFor="partyTareWeight">
+                  PARTY TARE WEIGHT
+                </label>
                 <input
                   id="partyTareWeight"
                   type="number"
@@ -421,7 +662,9 @@ function WeighmentCreate() {
               </div>
 
               <div className="cw-field">
-                <label htmlFor="partyNetWeight">PARTY NET WEIGHT</label>
+                <label htmlFor="partyNetWeight">
+                  PARTY NET WEIGHT
+                </label>
                 <input
                   id="partyNetWeight"
                   value={partyNetWeight}
@@ -431,7 +674,9 @@ function WeighmentCreate() {
               </div>
 
               <div className="cw-field">
-                <label htmlFor="vehicleNo">VEHICLE NO *</label>
+                <label htmlFor="vehicleNo">
+                  VEHICLE NO *
+                </label>
                 <input
                   id="vehicleNo"
                   name="vehicleNo"
@@ -443,7 +688,9 @@ function WeighmentCreate() {
               </div>
 
               <div className="cw-field">
-                <label htmlFor="itemName">ITEM NAME *</label>
+                <label htmlFor="itemName">
+                  ITEM NAME *
+                </label>
                 <select
                   id="itemName"
                   name="itemName"
@@ -452,8 +699,12 @@ function WeighmentCreate() {
                   required
                 >
                   <option value="Scrap">Scrap</option>
-                  <option value="Ramming Mass">Ramming Mass</option>
-                  <option value="Sponge Iron">Sponge Iron</option>
+                  <option value="Ramming Mass">
+                    Ramming Mass
+                  </option>
+                  <option value="Sponge Iron">
+                    Sponge Iron
+                  </option>
                   <option value="Others">Others</option>
                 </select>
               </div>
@@ -488,11 +739,15 @@ function WeighmentCreate() {
           </section>
 
           <section className="cw-card">
-            <h3 className="cw-section-title">⚖ WEIGHT CAPTURE</h3>
+            <h3 className="cw-section-title">
+              ⚖ WEIGHT CAPTURE
+            </h3>
 
             <div className="cw-capture-panel">
               <div className="cw-field">
-                <label htmlFor="firstWeight">FIRST WEIGHT</label>
+                <label htmlFor="firstWeight">
+                  FIRST WEIGHT
+                </label>
                 <input
                   id="firstWeight"
                   value={firstWeight ?? ""}
@@ -503,7 +758,9 @@ function WeighmentCreate() {
               </div>
 
               <div className="cw-field">
-                <label htmlFor="secondWeight">SECOND WEIGHT</label>
+                <label htmlFor="secondWeight">
+                  SECOND WEIGHT
+                </label>
                 <input
                   id="secondWeight"
                   value={secondWeight ?? ""}
@@ -514,7 +771,9 @@ function WeighmentCreate() {
               </div>
 
               <div className="cw-field">
-                <label htmlFor="captureNetWeight">NET WEIGHT</label>
+                <label htmlFor="captureNetWeight">
+                  NET WEIGHT
+                </label>
                 <input
                   id="captureNetWeight"
                   value={captureNetWeight}
@@ -527,7 +786,9 @@ function WeighmentCreate() {
               <div className="cw-field">
                 <label htmlFor="weightInMT">
                   WEIGHT (IN MT)
-                  <span className="cw-weight-hint"> — enter weight here</span>
+                  <span className="cw-weight-hint">
+                    {" "}— enter weight here
+                  </span>
                 </label>
 
                 <div className="cw-weight-entry">
@@ -537,9 +798,12 @@ function WeighmentCreate() {
                     min="0"
                     step="any"
                     value={weightInMT}
-                    onChange={(event) => setWeightInMT(event.target.value)}
+                    onChange={(event) =>
+                      setWeightInMT(event.target.value)
+                    }
                     placeholder="Enter weight in MT"
                   />
+
                   <button
                     type="button"
                     className="cw-get-weight-button"
@@ -574,19 +838,24 @@ function WeighmentCreate() {
                     <th>ACTION</th>
                   </tr>
                 </thead>
+
                 <tbody>
                   {rows.map((row, index) => (
                     <tr key={row.id}>
-                      <td className="cw-slno">{index + 1}</td>
+                      <td className="cw-slno">
+                        {index + 1}
+                      </td>
+
                       <td>
-                        <input
+                        <ItemNameCombobox
                           value={row.itemName}
-                          onChange={(event) =>
-                            updateRow(row.id, "itemName", event.target.value)
+                          onChange={(name) =>
+                            updateRow(row.id, "itemName", name)
                           }
-                          placeholder="Enter item name"
+                          placeholder="Select or type item name"
                         />
                       </td>
+
                       <td>
                         <input
                           type="number"
@@ -594,12 +863,17 @@ function WeighmentCreate() {
                           step="any"
                           value={row.grossWeight ?? ""}
                           onChange={(event) =>
-                            updateRow(row.id, "grossWeight", event.target.value)
+                            updateRow(
+                              row.id,
+                              "grossWeight",
+                              event.target.value
+                            )
                           }
                           placeholder="Gross weight"
                           className="cw-weight-input"
                         />
                       </td>
+
                       <td>
                         <input
                           type="number"
@@ -607,24 +881,48 @@ function WeighmentCreate() {
                           step="any"
                           value={row.tareWeight ?? ""}
                           onChange={(event) =>
-                            updateRow(row.id, "tareWeight", event.target.value)
+                            updateRow(
+                              row.id,
+                              "tareWeight",
+                              event.target.value
+                            )
                           }
                           placeholder="Tare weight"
                           className="cw-weight-input"
                         />
                       </td>
+
                       <td>
                         <input
-                          value={calculateNet(row.grossWeight, row.tareWeight)}
-                          readOnly
-                          placeholder="—"
+                          type="number"
+                          min="0"
+                          step="any"
+                          value={
+                            row.netWeight !== ""
+                              ? row.netWeight
+                              : calculateNet(
+                                  row.grossWeight,
+                                  row.tareWeight
+                                )
+                          }
+                          onChange={(event) =>
+                            updateRow(
+                              row.id,
+                              "netWeight",
+                              event.target.value
+                            )
+                          }
+                          placeholder="Net weight"
                           className="cw-net-input"
                         />
                       </td>
+
                       <td>
                         <input
                           type="checkbox"
-                          checked={Boolean(row.transferTareToNext)}
+                          checked={Boolean(
+                            row.transferTareToNext
+                          )}
                           disabled={index === rows.length - 1}
                           title={
                             index === rows.length - 1
@@ -639,6 +937,7 @@ function WeighmentCreate() {
                           }
                         />
                       </td>
+
                       <td>
                         <button
                           type="button"
@@ -656,16 +955,31 @@ function WeighmentCreate() {
               </table>
             </div>
 
+            <div className="cw-total-bar">
+              <span className="cw-total-label">
+                TOTAL NET WEIGHT (ALL ITEMS)
+              </span>
+              <span className="cw-total-value">
+                {totalItemNetWeight}
+              </span>
+            </div>
+
             <div className="cw-row-controls">
-              <label htmlFor="rowsToAdd">Rows to add:</label>
+              <label htmlFor="rowsToAdd">
+                Rows to add:
+              </label>
+
               <input
                 id="rowsToAdd"
                 type="number"
                 min="1"
                 max="50"
                 value={rowsToAdd}
-                onChange={(event) => setRowsToAdd(event.target.value)}
+                onChange={(event) =>
+                  setRowsToAdd(event.target.value)
+                }
               />
+
               <button
                 type="button"
                 className="cw-insert-button"
@@ -690,7 +1004,9 @@ function WeighmentCreate() {
             type="button"
             className="cw-draft-button"
             disabled={saving}
-            onClick={(event) => handleSave(event, "Draft")}
+            onClick={(event) =>
+              handleSave(event, "Draft")
+            }
           >
             {saving ? "Saving..." : "Save as Draft"}
           </button>
