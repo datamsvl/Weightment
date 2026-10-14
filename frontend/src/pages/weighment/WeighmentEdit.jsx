@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import "./WeighmentCreate.css";
 import ItemNameCombobox from "./ItemNameCombobox";
 
-const API_URL = "https://weightment-backend.onrender.com";
+const API_URL = "https://weightment-backend.onrender.com/api/weighments";
 
 const createRow = (id) => ({
   id,
