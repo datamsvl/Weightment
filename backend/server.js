@@ -9,27 +9,22 @@ dotenv.config();
 
 const app = express();
 
-// Allow your Netlify frontend and local development frontend
 const allowedOrigins = [
-  process.env.FRONTEND_URL,
+  "https://comfy-pasca-dc6387.netlify.app",
   "http://localhost:5173",
-].filter(Boolean);
+];
 
 app.use(
   cors({
-    origin: (origin, callback) => {
-      // Allow requests without an Origin header, such as server-side tools
-      if (!origin || allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-
-      return callback(new Error("Not allowed by CORS"));
-    },
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
 app.use(express.json());
 
+// Your routes
 app.use("/api/weighments", weighmentRoutes);
 
 // Test API
