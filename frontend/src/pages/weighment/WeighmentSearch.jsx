@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./WeighmentSearch.css";
@@ -9,7 +8,7 @@ const initialFilters = {
   date: "",
   partyName: "",
   vehicleNo: "",
-  status: "Active",
+  status: "All",
 };
 
 function formatDate(value) {
@@ -33,10 +32,10 @@ function getStatusClass(status) {
       return "status-draft";
     case "open":
       return "status-open";
+    case "closed":
     case "saved":
-      return "status-saved";
     case "convert":
-      return "status-convert";
+      return "status-closed";
     default:
       return "status-default";
   }
@@ -209,12 +208,10 @@ export default function WeighmentSearch() {
               value={filters.status}
               onChange={handleFilterChange}
             >
-              <option value="Active">Active</option>
               <option value="All">All</option>
               <option value="Open">Open</option>
               <option value="Draft">Draft</option>
-              <option value="Saved">Saved</option>
-              <option value="Convert">Convert</option>
+              <option value="Closed">Closed</option>
             </select>
           </div>
         </div>

@@ -609,7 +609,7 @@ function WeighmentCreate() {
         </div>
       </header>
 
-      <form onSubmit={(event) => handleSave(event, "Saved")}>
+      <form onSubmit={(event) => handleSave(event, "Closed")}>
         <main className="cw-content">
           <section className="cw-card">
             <h3 className="cw-section-title">
@@ -719,8 +719,7 @@ function WeighmentCreate() {
                 >
                   <option value="Open">Open</option>
                   <option value="Draft">Draft</option>
-                  <option value="Saved">Saved</option>
-                  <option value="Convert">Convert</option>
+                  <option value="Closed">Closed</option>
                 </select>
               </div>
 

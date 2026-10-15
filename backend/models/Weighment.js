@@ -1,4 +1,3 @@
-
 const mongoose = require("mongoose");
 
 const weighmentItemSchema = new mongoose.Schema(
@@ -85,7 +84,7 @@ const weighmentSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["Open", "Draft", "Saved", "Convert"],
+      enum: ["Open", "Draft", "Closed"],
       default: "Open",
     },
     items: {

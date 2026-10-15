@@ -1,4 +1,3 @@
-
 const express = require("express");
 const mongoose = require("mongoose");
 const router = express.Router();
@@ -9,7 +8,7 @@ const Weighment = require("../models/Weighment");
 // HELPER FUNCTIONS
 // =============================================
 
-const ALLOWED_STATUSES = ["Open", "Draft", "Saved", "Convert"];
+const ALLOWED_STATUSES = ["Open", "Draft", "Closed"];
 
 const ALLOWED_ITEM_TYPES = [
   "",
@@ -131,7 +130,7 @@ router.get("/", async (req, res) => {
       };
     }
 
-    // Active and All return records of every status.
+    // All (and legacy Active) return records of every status.
     if (status && !["Active", "All"].includes(status)) {
       if (!ALLOWED_STATUSES.includes(status)) {
         return res.status(400).json({

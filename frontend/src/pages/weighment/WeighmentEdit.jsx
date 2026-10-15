@@ -155,7 +155,11 @@ function WeighmentEdit() {
         partyTareWeight: record.partyTareWeight ?? "",
         vehicleNo: record.vehicleNo || "",
         itemName: record.itemName || "Scrap",
-        status: record.status || "Open",
+        status: ["Open", "Draft", "Closed"].includes(record.status)
+          ? record.status
+          : record.status
+            ? "Closed"
+            : "Open",
       });
 
       setFirstWeight(savedFirstWeight);
@@ -895,8 +899,7 @@ function WeighmentEdit() {
                 >
                   <option value="Open">Open</option>
                   <option value="Draft">Draft</option>
-                  <option value="Saved">Saved</option>
-                  <option value="Convert">Convert</option>
+                  <option value="Closed">Closed</option>
                 </select>
               </div>
 
